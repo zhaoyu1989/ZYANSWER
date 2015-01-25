@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<project name = "structured" default="archive" basedir="./">
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="src.dir" value="${basedir}/src" />
+    <property name="src.class.dir" value="${build.dir}/classes" />
+    <property name="test.dir" value="${basedir}/test" />
+    <property name="test.class.dir" value="${test.dir}/classes" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="report.dir" value="${basedir}/report" />
+	<path id="lib.path">
+        <fileset dir="${basedir}/lib">
+            <include name="**/*.jar" />
+            <exclude name="**/ant.jar" />
+        </fileset> 
+    </path>
+
+	<target name ="init">
+	<description>Compiles and runs a simple program</description>
+		<mkdir dir="${src.class.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${test.class.dir}"/>
+	</target>
+	<!--src compile-->
+	<target name ="compile" depends="init">
+		<description>Compiles the source code</description>
+		<javac srcdir="${src.dir}" destdir="${src.class.dir}" includeAntRuntime="false"/>
+	</target>
+	
+	<!--test compile-->
+	<target name ="testcompile" depends="compile">
+		<description>Compiles the junit code</description>
+		<javac srcdir="${test.dir}" destdir="${test.class.dir}" includeAntRuntime="false" classpathref="lib.path">
+		<classpath>
+                <pathelement location="${src.class.dir}" />
+				<pathelement location="${src.dir}"/>
+        </classpath>
+		</javac>
+	</target>
+	
+	<!--junit start-->
+	<target name="junitrun" depends="compile,testcompile"> 
+		<description>start junit test</description>
+		<junit printsummary="on" fork="true" showoutput="true"> 
+			<classpath> 
+				<pathelement location="${test.class.dir}"/> 
+				<pathelement location="${src.class.dir}"/> 
+				<pathelement location="${src.dir}"/> 
+				<path refid="lib.path" />
+			</classpath> 
+			<formatter type="xml" /> 
+			<batchtest > 
+				<fileset dir="${test.dir}"> 
+					<include name="**/*.java" />
+				</fileset> 
+			</batchtest> 
+		</junit> 
+		<!--report-->
+		<junitreport todir="${report.dir}"> 
+			<fileset dir="${report.dir}"> 
+				<include name="TEST-*.xml" /> 
+			</fileset> 
+			<report format="frames" todir="${report.dir}" /> 
+	    </junitreport>
+	</target> 
+	<!--junit end-->
+	
+	<!--create jar file-->
+	<target name ="archive" depends="junitrun">
+		<description>create jar file</description>
+		<jar destfile="${dist.dir}/project.jar" basedir="${src.class.dir}"/>		
+	</target>	
+</project>
